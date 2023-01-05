@@ -1,0 +1,88 @@
+version: "3.8"
+x-airflow-common:
+  environment:
+    &airflow-common-env
+    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: 'postgresql://airflow:airflow@postgres/airflow'
+    ENVIRONMENT: dev
+
+volumes:
+  airflow_postgres:
+    driver: local
+  local_db:
+    driver: local
+
+services:
+  postgres:
+    image: postgres:13.3-alpine
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - airflow_postgres:/var/lib/postgresql/data
+    ports:
+      - 5439:5432
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 5s
+      retries: 5
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  local_database:
+      image: postgres:13.3-alpine
+      restart: always
+      environment:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: local_db
+      volumes:
+          - local_db:/var/lib/postgresql/data
+      ports:
+          - "5432:5432"
+
+  webserver:
+    image: airflow-local:latest
+    container_name: airflow-webserver
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: bash -c "airflow db upgrade && airflow webserver"
+    volumes:
+      - ./.local/airflow.cfg:/opt/airflow/airflow.cfg
+      - ./dags:/opt/airflow/dags
+    ports:
+      - 8080:8080
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 15s
+      retries: 20
+    environment:
+      <<: *airflow-common-env
+
+  scheduler:
+    image: airflow-local:latest
+    container_name: airflow-scheduler
+    depends_on:
+      postgres:
+        condition: service_healthy
+      webserver:
+        condition: service_healthy
+    command: |
+      airflow scheduler
+    ports:
+      - 8793:8793
+    volumes:
+      - ./.local/airflow.cfg:/opt/airflow/airflow.cfg
+      - ./dags:/opt/airflow/dags
+      - ./data:/opt/airflow/data
+      - ./dbt:/opt/airflow/dbt
+    environment:
+      <<: *airflow-common-env

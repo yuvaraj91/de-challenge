@@ -127,3 +127,17 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+# dbt and others
+.git
+.env
+airflow_settings.yaml
+.DS_Store
+.idea*
+*.pyc
+*/__pycache__/*
+dbt/dbt_packages/
+dbt/logs/
+dbt/.user.yml
+data/myoutput.json
