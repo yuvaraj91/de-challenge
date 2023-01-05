@@ -1,0 +1,12 @@
+fotografde:
+  outputs:
+    dev:
+      type: postgres
+      threads: 1
+      host: local_database
+      port: 5432
+      user: admin
+      pass: admin
+      dbname: local_db
+      schema: public
+  target: dev
