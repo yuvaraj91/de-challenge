@@ -1,90 +1,113 @@
+
+My idea was the build a "proper" ETL pipeline using Airflow that loads the data, and triggers dbt models for the transformations. This was to simulate a production-like pipeline and build a complete solution.
+
 # Starting Airflow
 
-Please ensure no conflicting images in Docker running on the same port.
-
-Spin up the containers instance by running (ignore deprecation warnings):
-<pre>
+Spin up the containers instance by running (ignore deprecation warnings). **_NOTE:_** Please ensure no conflicting images in Docker running on the same port.  
+```
 make airflow-up
-</pre>
+```
 
-Airflow will then be reachable at [localhost:8080](http://localhost:8080), via these credentials:
-<pre>
+This will launch the Airflow instance, and separate local Postgres instance used in the ETL pipeline.
+
+Airflow will be reachable at [localhost:8080](http://localhost:8080), via these credentials:
+```
 user: airflow
 password: airflow
-</pre>
+```
 
-# Postgres Connection
-In Airflow Connections, create a Postgres Connection:
+# Postgres Connection in Airflow
 
-<pre>
+On the dropdown menu on top, Admin -> Connections, add a new Connection:
+
+<img src="images/adminconn.png"  width="500">
+
+```
 connection id: postgres_default
-host: host.docker.internal
+host: local_database (if fails, try: host.docker.internal)
 schema: local_db
 user: admin
 password: admin
-</pre>
+```
 
-## Source data
+<img src="images/airflow_ui.png"  width="350">
 
-The folder containing the two csv files (data/ folder) are mounted in the volume.
+# Source data
 
-## Shutting down
-
-To shut down Airflow run:
-
-<pre>
-make airflow-down
-</pre>
-
-## Others
-
-SQL files can be found in this folder: `dags/sql/`
+The folder containing the two csv files (`data/` folder) are mounted in the volume.
 
 
-## Database IDE
+# Running the DAG in Airflow
+
+Simply run by clicking the "play" button. 
+
+![](images/dag.png)
+
+The DAG runs to create and load the raw tables, and runs the dbt models for the transformations. The final task creates the output file.
+
+# Project folder
+
+* SQL files used in the Airflow DAG can be found in this folder: `dags/sql/`
+* The `dbt` folder contains the models used in the Airflow DAG.
+* To interact with the codebase locally, create a virtual environment which installs the dependencies and switch to it.
+
+```
+make init-venv
+```
+
+# Database IDE
 Connection settings in Dbeaver (or other IDE):
 
-<pre>
+```
+Postgres
 host: locahost
 port: 5432
 database: local_db
 username: admin
 password: admin
-</pre>
+```
 
 
-# cannot use MSQL
-https://github.com/apache/airflow/discussions/25831
+# Notes on not using MySQL db
+
+* I do create an instance of mysql, check out the `docker-compose.yml` file. This will be reachable with the credentials provided.
+* However due to limitations with Docker M1 and Airflow as described [here](https://github.com/apache/airflow/discussions/25831), I went with Postgres. The SQL syntax and design would be similar anyway.
+* I wrote a sample code to create and load a table in MySQL, check out `mysql_solution.py`. I again cannot run this locally, see [here](https://stackoverflow.com/questions/67876857/mysqlclient-wont-install-via-pip-on-macbook-pro-m1-with-latest-version-of-big-s). However, this code sample shows how I would have used the simple Python scripts.
 
 
+# Running dbt outside of Airflow
 
-due to time limit and simplicity - mostly hardcoded the connection settings and other setup.
+If you want to trigger, firstly change to the dbt directory: `cd dbt`
 
-# dbt commands
+Change `profiles.yml` host to `localhost`.
 
-check if setup is fine:
+Check if setup is fine:
+```
+dbt debug
+```
 
-`dbt debug`
+Run the sample models:
+```
+dbt run --select myoutput
+```
 
-run the sample models:
+This for example creates the table public.myoutput
 
-`dbt run --select myoutput`
+Clean the output files:
+```
+dbt clean
+```
 
-Creates the table public.myoutput
+# Thought process:
 
-`dbt run --select average_age`
+* Due to time limit of < 3 hours and for simplicity; I hardcoded the connection settings and other configs. This is obviously not indicative of a proper development in the real world.
+* The final output file is written to `data/myoutput.json`.
+* I create two additional simple dbt models, `average_age` and `number_cities` just to answer Task 2.
 
-Creates the table public.average_age
+# Shutting down
 
+To shut down Airflow and the container run:
 
-
-Notes on running dbt in the terminal (outside Airflow)
-
-change profiles.yml host to `localhost`
-
-
-
-
-https://stackoverflow.com/questions/67876857/mysqlclient-wont-install-via-pip-on-macbook-pro-m1-with-latest-version-of-big-s
-
-
+```
+make airflow-down
+```

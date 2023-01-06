@@ -27,9 +27,6 @@ default:
 	@echo " airflow-webserver-shell - attach to the webserver container running airflow"
 	@echo " airflow-scheduler-shell - attach to the scheduler container running airflow"
 	@echo " isort-fix - fix the imports in Python files"
-	@echo " flake8 - Check python code formatting based on flake8"
-	@echo " pytest - Run unit tests"
-	@echo " test - Fix imports, code style, and run unit tests"
 
 .PHONY: activate
 activate:
@@ -99,20 +96,7 @@ init-local: clean-local
 	. ./venv/bin/activate; \
 	./.local/init
 
-.PHONY: flake8
-flake8:
-	. ./venv/bin/activate; \
-	python3 -m flake8 .
-
 .PHONY: isort-fix
 isort-fix:
 	. ./venv/bin/activate; \
 	python3 -m isort . --skip venv --skip logs
-
-.PHONY: pytest
-pytest:
-	. ./venv/bin/activate; \
-	AIRFLOW_HOME=$(REPO_ROOT) python3 -m pytest tests -vv --disable-pytest-warnings
-
-.PHONY: test
-test: isort-fix flake8 pytest
