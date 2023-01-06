@@ -75,3 +75,16 @@ Creates the table public.myoutput
 `dbt run --select average_age`
 
 Creates the table public.average_age
+
+
+
+Notes on running dbt in the terminal (outside Airflow)
+
+change profiles.yml host to `localhost`
+
+
+
+
+https://stackoverflow.com/questions/67876857/mysqlclient-wont-install-via-pip-on-macbook-pro-m1-with-latest-version-of-big-s
+
+

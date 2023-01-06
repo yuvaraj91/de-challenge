@@ -1,15 +1,24 @@
-import logging
-import psycopg2
 import json
+import logging
+import sys
+
+import psycopg2
 
 logger = logging.getLogger(__name__)
 
 
-def create_engine() -> None:
-    return psycopg2.connect("host=local_database dbname=local_db user=admin password=admin")
+def create_engine():
+    try:
+        conn = psycopg2.connect("host=local_database dbname=local_db user=admin password=admin")
+    except psycopg2.OperationalError as e:
+        logger.info(f'Unable to connect, {e}')
+        sys.exit(1)
+    else:
+        logger.info('Connected to database')
+        return conn
 
 
-def copy_table(dest_table: str, src_file: str) -> None:
+def copy_table(dest_table, src_file):
     conn = create_engine()
     cur = conn.cursor()
     logger.info(f'Writing file {src_file} to table {dest_table}')
@@ -20,7 +29,7 @@ def copy_table(dest_table: str, src_file: str) -> None:
     conn.close()
 
 
-def write_output_json() -> None:
+def write_output_json():
     """To output a JSON file as:
     {"Scotland":8048,"Northern Ireland":1952}
     """
