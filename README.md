@@ -86,12 +86,12 @@ Check if setup is fine:
 dbt debug
 ```
 
-Run the sample models:
+The models are in `dbt/models`. Run a sample model:
 ```
 dbt run --select myoutput
 ```
 
-This for example creates the table public.myoutput
+This for example creates the table `public.myoutput`.
 
 Clean the output files:
 ```
@@ -101,6 +101,15 @@ dbt clean
 # Thought process:
 
 * Due to time limit of < 3 hours and for simplicity; I hardcoded the connection settings and other configs. This is obviously not indicative of a proper development in the real world.
+* I simply used the default `public` schema in Postgre for all tasks, again for simplicity.
+* Raw & transformed tables created by the Airflow DAG:
+```
+public.people
+public.places
+public.myoutput
+public.average_age (Average age of people in the city, no death date provided so most are above 100 years old.)
+public.number_cities (Number of cities in the country).
+```
 * The final output file is written to `data/myoutput.json`.
 * I create two additional simple dbt models, `average_age` and `number_cities` just to answer Task 2.
 
