@@ -1,11 +1,12 @@
 import datetime
+import logging
+
 from airflow import DAG
+from airflow.operators.bash import BashOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.operators.postgres import PostgresOperator
-from airflow.operators.bash import BashOperator
 from airflow.utils.task_group import TaskGroup
-import logging
 from commons import copy_table, write_output_json
 
 logger = logging.getLogger(__name__)
@@ -51,15 +52,26 @@ with DAG(
         create_places >> load_places
         create_people >> load_people
     
-    dbt_myoutput = BashOperator(
-        task_id='dbt_myoutput',
-        bash_command=f"dbt run --profiles-dir {DBT_PROJECT_DIR} --project-dir {DBT_PROJECT_DIR} --select myoutput",
+    with TaskGroup(group_id="dbt_tasks") as dbt_tasks:
+        dbt_myoutput = BashOperator(
+            task_id='dbt_myoutput',
+            bash_command=f"dbt run --profiles-dir {DBT_PROJECT_DIR} --project-dir {DBT_PROJECT_DIR} --select myoutput",
         )
     
-    dbt_average_age = BashOperator(
-        task_id='dbt_average_age',
-        bash_command=f"dbt run --profiles-dir {DBT_PROJECT_DIR} --project-dir {DBT_PROJECT_DIR} --select average_age",
+        dbt_average_age = BashOperator(
+            task_id='dbt_average_age',
+            bash_command=f"dbt run --profiles-dir {DBT_PROJECT_DIR} --project-dir {DBT_PROJECT_DIR} --select average_age",
         )
+        
+        dbt_num_cities = BashOperator(
+            task_id='dbt_number_cities',
+            bash_command=f"dbt run --profiles-dir {DBT_PROJECT_DIR} --project-dir {DBT_PROJECT_DIR} --select number_cities",
+        )
+        
+        dbt_myoutput
+        dbt_average_age
+        dbt_num_cities
+        
     
     write_output = PythonOperator(
             task_id='write_output_json_file',
@@ -71,4 +83,4 @@ with DAG(
         task_id='end'
     )
 
-    start >> load_data >> dbt_myoutput >> dbt_average_age >> write_output >> end
+    start >> load_data >> dbt_tasks >> write_output >> end

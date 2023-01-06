@@ -5,4 +5,4 @@ CREATE TABLE people (
 	family_name VARCHAR(30),
 	date_of_birth DATE,
 	place_of_birth VARCHAR(20)
-    );
+);
