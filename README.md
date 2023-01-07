@@ -1,9 +1,9 @@
 
-My idea was the build a "proper" ETL pipeline using Airflow that loads the data, and triggers dbt models for the transformations. This was to simulate a production-like pipeline and build a complete solution.
+My idea was to build a "proper" ETL pipeline using Airflow that loads the data, and triggers dbt models for the transformations. This was to simulate a production-like pipeline and build a complete solution.
 
 # Starting Airflow
 
-Spin up the containers instance by running (ignore deprecation warnings). **_NOTE:_** Please ensure no conflicting images in Docker running on the same port.  
+Spin up the containers instance by running the command below (ignore deprecation warnings). **_NOTE:_** Please ensure no conflicting images in Docker running on the same port.  
 ```
 make airflow-up
 ```
@@ -25,6 +25,7 @@ On the dropdown menu on top, Admin -> Connections, add a new Connection:
 ```
 connection id: postgres_default
 host: local_database (if fails, try: host.docker.internal)
+port: 5432
 schema: local_db
 user: admin
 password: admin
@@ -70,8 +71,8 @@ password: admin
 
 # Notes on not using MySQL db
 
-* I do create an instance of mysql, check out the `docker-compose.yml` file. This will be reachable with the credentials provided.
-* However due to limitations with Docker M1 and Airflow as described [here](https://github.com/apache/airflow/discussions/25831), I went with Postgres. The SQL syntax and design would be similar anyway.
+* I did create an instance of mysql, check out the `docker-compose.yml` file. This will be reachable with the credentials provided.
+* However due to time limitations and problems with Docker in Mac M1 chip and Airflow as described [here](https://github.com/apache/airflow/discussions/25831), I went with Postgres. The SQL syntax and design would be similar anyway.
 * I wrote a sample code to create and load a table in MySQL, check out `mysql_solution.py`. I again cannot run this locally, see [here](https://stackoverflow.com/questions/67876857/mysqlclient-wont-install-via-pip-on-macbook-pro-m1-with-latest-version-of-big-s). However, this code sample shows how I would have used the simple Python scripts.
 
 
@@ -101,7 +102,7 @@ dbt clean
 # Thought process:
 
 * Due to time limit of < 3 hours and for simplicity; I hardcoded the connection settings and other configs. This is obviously not indicative of a proper development in the real world.
-* I simply used the default `public` schema in Postgre for all tasks, again for simplicity.
+* I simply used the default `public` schema in Postgres for all tasks, again for simplicity.
 * Raw & transformed tables created by the Airflow DAG:
 ```
 public.people
@@ -111,7 +112,7 @@ public.average_age (Average age of people in the city, no death date provided so
 public.number_cities (Number of cities in the country).
 ```
 * The final output file is written to `data/myoutput.json`.
-* I create two additional simple dbt models, `average_age` and `number_cities` just to answer Task 2.
+* I created two additional simple dbt models, `average_age` and `number_cities` just to answer Task 2.
 
 # Shutting down
 
