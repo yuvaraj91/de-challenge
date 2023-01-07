@@ -101,7 +101,7 @@ dbt clean
 
 # Thought process:
 
-* Due to time limit of < 3 hours and for simplicity; I hardcoded the connection settings and other configs. This is obviously not indicative of a proper development in the real world.
+* For simplicity and to avoid taking too many hours on the tasks; I hardcoded the connection settings and other configs. This is obviously not indicative of a proper development in the real world.
 * I simply used the default `public` schema in Postgres for all tasks, again for simplicity.
 * Raw & transformed tables created by the Airflow DAG:
 ```
@@ -113,6 +113,7 @@ public.number_cities (Number of cities in the country).
 ```
 * The final output file is written to `data/myoutput.json`.
 * I created two additional simple dbt models, `average_age` and `number_cities` just to answer Task 2.
+* The write-up talked about error handling and testing, the code and datasets are very shallow to require this, nevertheless I wrote instances of this in `dags/commons.py` as examples.
 
 # Shutting down
 
