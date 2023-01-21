@@ -3,30 +3,12 @@ AIRFLOW_WEBSERVER_CONTAINER = airflow-webserver
 AIRFLOW_SCHEDULER_CONTAINER = airflow-scheduler
 VENV = ./venv
 
-BOLD=$(shell tput bold)
-RED=$(shell tput setaf 1)
-GREEN=$(shell tput setaf 2)
-YELLOW=$(shell tput setaf 3)
-RESET=$(shell tput sgr0)
 
 .PHONY: default build clean-venv init-venv airflow-down airflow-up isort-fix flake8 pytest test database-up
 
-AIRFLOW_MESSAGE = "Login to Airflow at $(GREEN)http://localhost:8080$(RESET)\
-\nUsername: $(GREEN)airflow$(RESET)\
-\nPassword: $(GREEN)airflow$(RESET)\
-\nWhen running for the first time, it can take up to 3 minutes before the user is available.\
-\nYou can run $(BOLD)docker logs --follow data-airflow-init-1$(RESET) to see if the user is being created."
-
-default:
-	@echo "The following commands are available:"
-	@echo " init-venv - initialize a virtual environment"
-	@echo " airflow-up - bring airflow up"
-	@echo " airflow-down - bring airflow down"
-	@echo " airflow-webserver-logs - print airflow webserver logs continuously"
-	@echo " airflow-scheduler-logs - print airflow scheduler logs continuously"
-	@echo " airflow-webserver-shell - attach to the webserver container running airflow"
-	@echo " airflow-scheduler-shell - attach to the scheduler container running airflow"
-	@echo " isort-fix - fix the imports in Python files"
+AIRFLOW_MESSAGE = "Login to Airflow at http://localhost:8080\
+\nUsername: airflow\
+\nPassword: airflow\
 
 .PHONY: activate
 activate:
@@ -49,22 +31,6 @@ airflow-up: airflow-down build
 .PHONY: airflow-down
 airflow-down:
 	@docker-compose down
-
-.PHONY: airflow-webserver-logs
-airflow-webserver-logs:
-	@docker logs --follow $(AIRFLOW_WEBSERVER_CONTAINER)
-
-.PHONY: airflow-scheduler-logs
-airflow-scheduler-logs:
-	@docker logs --follow $(AIRFLOW_SCHEDULER_CONTAINER)
-
-.PHONY: airflow-webserver-shell
-airflow-webserver-shell:
-	@docker exec -it $(AIRFLOW_WEBSERVER_CONTAINER) /bin/bash
-
-.PHONY: airflow-scheduler-shell
-airflow-scheduler-shell:
-	@docker exec -it $(AIRFLOW_SCHEDULER_CONTAINER) /bin/bash
 
 .PHONY: clean-local
 clean-local:
@@ -95,8 +61,3 @@ init-venv: clean-venv
 init-local: clean-local
 	. ./venv/bin/activate; \
 	./.local/init
-
-.PHONY: isort-fix
-isort-fix:
-	. ./venv/bin/activate; \
-	python3 -m isort . --skip venv --skip logs
