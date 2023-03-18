@@ -3,10 +3,10 @@ fotografde:
     dev:
       type: postgres
       threads: 1
-      host: local_database
-      port: 5432
+      host: localhost
+      port: 5435
       user: admin
       pass: admin
-      dbname: local_db
+      dbname: db
       schema: public
   target: dev
