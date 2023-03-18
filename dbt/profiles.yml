@@ -1,4 +1,4 @@
-fotografde:
+normalize:
   outputs:
     dev:
       type: postgres
